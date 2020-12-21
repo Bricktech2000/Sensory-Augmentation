@@ -5,18 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="sensoryAddition.js"></script>
+    <style>
+        canvas, video{
+            width: 50vh;
+            height: 50vh;
+        }
+        canvas{
+            image-rendering: pixelated;
+        }
+    </style>
 </head>
 <body>
     Body
     <script>
-        var canvas = document.createElement('canvas');
-        document.body.appendChild(canvas);
-        canvas.height = canvas.width = 128;
-
-        var ctx = SensoryAddition.cameraIn(canvas);
-        /*var data = SensoryAddition.toData(ctx);
-        var freq = SensoryAddition.toFrequencies(data);
-        SensoryAddition.soundOut(freq);*/
+        (async () =>{
+            var canvas = await SensoryAddition.cameraIn(16);
+            document.body.appendChild(canvas);
+            /*var data = SensoryAddition.toData(ctx);
+            var freq = SensoryAddition.toFrequencies(data);
+            SensoryAddition.soundOut(freq);*/
+        })();
     </script>
 </body>
 </html>

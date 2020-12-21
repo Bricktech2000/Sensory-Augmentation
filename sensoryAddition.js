@@ -1,8 +1,10 @@
 window.SensoryAddition = {
-    cameraIn: async function(canvas){
+    cameraIn: async function(resolution){
         //https://www.damirscorner.com/blog/posts/20170317-RenderCapturedVideoToFullPageCanvas.html
         var video = document.createElement('video');
         document.body.appendChild(video);
+        var canvas = document.createElement('canvas');
+        canvas.width = canvas.height = resolution;
         var ctx = canvas.getContext('2d');
 
         if(navigator.mediaDevices.getUserMedia){
@@ -13,6 +15,7 @@ window.SensoryAddition = {
             video.srcObject = stream;
             video.play();
         }else throw new Error('getUserMedia not supported');
+
         function draw(){
             aspectRatio = video.videoWidth / video.videoHeight;
             videoWidth = canvas.height * aspectRatio;
@@ -29,5 +32,7 @@ window.SensoryAddition = {
             requestAnimationFrame(draw);
         }
         draw();
+
+        return canvas;
     }
 }
