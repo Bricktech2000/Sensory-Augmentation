@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="sensoryAddition.js"></script>
+</head>
+<body>
+    Body
+    <script>
+        var canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        canvas.height = canvas.width = 128;
+
+        var ctx = SensoryAddition.cameraIn(canvas);
+        /*var data = SensoryAddition.toData(ctx);
+        var freq = SensoryAddition.toFrequencies(data);
+        SensoryAddition.soundOut(freq);*/
+    </script>
+</body>
+</html>
