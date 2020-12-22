@@ -18,10 +18,10 @@
         }
     </style>
 </head>
-<body>
+<body ontouchstart="">
     <script>
         (async () =>{
-            var ctx = await SensoryAddition.cameraIn(4); //2 ^ n
+            var ctx = await SensoryAddition.cameraIn(3); //2 ^ n
             document.body.appendChild(ctx.canvas);
             var [data, ctx2] = await SensoryAddition.toData(ctx);
             document.body.appendChild(ctx2.canvas);

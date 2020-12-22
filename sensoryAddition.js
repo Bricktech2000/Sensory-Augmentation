@@ -12,10 +12,11 @@ window.SensoryAddition = {
         if(navigator.mediaDevices.getUserMedia){
             var stream = await navigator.mediaDevices.getUserMedia({
                 audio: false,
-                video: true,
+                //video: true,
                 //the following crashes both Chrome and Chromium Edge...
-                //video: { facingMode: { ideal: 'environment' } },
+                video: { facingMode: { ideal: 'environment' } },
             });
+            video.setAttribute('playsinline', ''); //prevent iOS black screen
             video.srcObject = stream;
             video.play();
         }else throw new Error('getUserMedia not supported');
@@ -123,7 +124,7 @@ window.SensoryAddition = {
     },
     soundOut: function(data, min, max){
         //https://stackoverflow.com/questions/43386277/how-to-control-the-sound-volume-of-audio-buffer-audiocontext
-        var ctx = new AudioContext();
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
         var gainNodes = [];
         var outputGain = ctx.createGain();
         //var i = 0;
@@ -148,7 +149,7 @@ window.SensoryAddition = {
         function update(){
             //https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Advanced_techniques
             for(var i = 0; i < data.length; i++){
-                if(i % 8 != 0) continue;
+                //if(i % 8 != 0) continue;
                 gainNodes[i].gain.linearRampToValueAtTime(Math.max(0, data[i]), ctx.currentTime + .1);
             }
             //gainNodes[i].gain.value = data[i];
