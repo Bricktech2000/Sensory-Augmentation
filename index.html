@@ -19,10 +19,10 @@
     Body
     <script>
         (async () =>{
-            var canvas = await SensoryAddition.cameraIn(16);
-            document.body.appendChild(canvas);
-            /*var data = SensoryAddition.toData(ctx);
-            var freq = SensoryAddition.toFrequencies(data);
+            var ctx = await SensoryAddition.cameraIn(4); //2 ^ n
+            document.body.appendChild(ctx.canvas);
+            var data = await SensoryAddition.toData(ctx);
+            /*var freq = SensoryAddition.toFrequencies(data);
             SensoryAddition.soundOut(freq);*/
         })();
     </script>
