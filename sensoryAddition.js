@@ -12,7 +12,9 @@ window.SensoryAddition = {
         if(navigator.mediaDevices.getUserMedia){
             var stream = await navigator.mediaDevices.getUserMedia({
                 audio: false,
-                video: { facingMode: { ideal: 'environment' } },
+                video: true,
+                //the following crashes both Chrome and Chromium Edge...
+                //video: { facingMode: { ideal: 'environment' } },
             });
             video.srcObject = stream;
             video.play();
