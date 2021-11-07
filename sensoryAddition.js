@@ -83,7 +83,7 @@ window.SensoryAddition = {
                     return [red, red + 1, red + 2, red + 3];
                 }
     
-                const pixelDarkener = 3; //a constant to darken the image, reducing noise
+                const pixelDarkener = 5; //a constant to darken the image, reducing noise
                 var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
                 var average = (imageData.reduce((a, v) => a + v, 0) / imageData.length - 255/4 /*alpha*/) / 3 * pixelDarkener;
                 var modData = new Uint8ClampedArray(this.size * this.size * 4);
@@ -93,11 +93,12 @@ window.SensoryAddition = {
                         var colorIndices = getColorIndicesForCoord(x, y, canvas.width);
                         var pixelData = [imageData[colorIndices[0]], imageData[colorIndices[1]], imageData[colorIndices[2]]];
                         var pixelAverage = Math.floor(pixelData.reduce((a, b) => a + b, 0) / 3);
-                        modData[colorIndices[0]] = pixelAverage - average;
-                        modData[colorIndices[1]] = pixelAverage - average;
-                        modData[colorIndices[2]] = pixelAverage - average;
+                        var delta = Math.abs(pixelAverage - average) * /*noise multiplier*/ 2 - /*noise floor*/ 128;
+                        modData[colorIndices[0]] = delta;
+                        modData[colorIndices[1]] = delta;
+                        modData[colorIndices[2]] = delta;
                         modData[colorIndices[3]] = 255; //100% opaque
-                        self.data[xy2d(this.size, x, y)] = (pixelAverage - average) / 256;
+                        self.data[xy2d(this.size, x, y)] = delta / 256;
                     }
                 }
                 
