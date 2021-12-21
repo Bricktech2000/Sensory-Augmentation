@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="sensoryAddition.js"></script>
     <style>
-        canvas, video{
-            width: 33.333vh;
-            height: 33.333vh;
-        }
-        canvas{
-            image-rendering: pixelated;
-        }
-        video{
-            height: auto;
-        }
+      canvas,
+      video {
+        width: 33.333vh;
+        height: 33.333vh;
+      }
+      canvas {
+        image-rendering: pixelated;
+      }
+      video {
+        height: auto;
+      }
     </style>
-</head>
-<body ontouchstart="">
+  </head>
+  <body ontouchstart="">
     <script>
-        (async () =>{
-            var ctx = await SensoryAddition.cameraIn(3); //2 ^ n
-            document.body.appendChild(ctx.canvas);
-            var [data, ctx2] = await SensoryAddition.toData(ctx);
-            document.body.appendChild(ctx2.canvas);
-            SensoryAddition.soundOut(data, 440, 3000);
-        })();
+      (async () => {
+        var ctx = await SensoryAddition.cameraIn(3); //2 ^ n
+        document.body.appendChild(ctx.canvas);
+        var [data, ctx2] = await SensoryAddition.toData(ctx);
+        document.body.appendChild(ctx2.canvas);
+        SensoryAddition.soundOut(data, 440, 3000);
+      })();
     </script>
-</body>
+  </body>
 </html>
