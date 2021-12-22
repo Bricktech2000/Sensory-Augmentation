@@ -28,15 +28,42 @@ add a new sense to a human body in a non-intrusive manner (aka no neural implant
 - use hilbert cuve
 - probably black and white
 
-## sight advantages
+## sight to hearing
+
+### sight advantages
 
 - extensible
 - could be changed to: infrared, ultraviolet, 360° vision...
 - could represent anything that can be viewed as a 2d image
 
-## sound advantages
+### hearing advantages
 
 - unfortunately used for something else (hearing)
 - only 1-dimensionnal (use of hilbert curve)
 - most precise sense after sight (can't use sight to add sight)
 - two completely different channels could be sent through 2 ears
+
+### conclusion
+
+this idea failed, as the rate of information flow in sight is too high for hearing to make sense of it
+
+## weather to touch
+
+current weather or weather forecast to vibrations
+
+### implementation
+
+```
+duration = average_duration * (1 + duration_deviation * tanh((temperature - mid_input) / input_deviation))
+```
+
+where `mid_input` is the average input value (highest resolution) and `input_deviation` is the difference between the extremes of the input (lower resolution). any input outside the range is very low resolution.
+
+by default: `average_duration = 1000ms` and `duration_deviation = 3/4`
+
+**pattern**: [1. vibration] [2. pause] [3. vibration] [4. pause]
+
+1. temperature: `mid_input` = `0°C`, `input_deviation = 20°C`
+2. humidity: `mid_input = 50%`, `input_deviation = 75%`
+3. wind: `mid_input = 0km/h`, `input_deviation = 20km/h`, `average_duration = 1000ms * 1/4`, `duration_deviation = 2`
+4. precipitation: `mid_input = 50%`, `input_deviation = 75%`
