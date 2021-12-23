@@ -1,4 +1,4 @@
-window.SensoryAddition = {
+window.SensoryAugmentation = {
   cameraIn: async function (resolution) {
     this.resolution = resolution;
     this.size = Math.pow(2, resolution);

@@ -44,17 +44,10 @@
         const CelciusToKelvin = (C) => C + 273.15;
 
         // https://openweathermap.org/api/one-call-api
-        const curatedData = [
-          weatherData.current,
-          // weatherData.hourly[6],
-          // weatherData.hourly[12],
-        ];
-        // var vibrationPattern = [1000 * vibrationToPauseRatio]; // initial 1000ms vibration for reference
+        const curatedData = [weatherData.current];
         var vibrationPattern = [];
         for (var data of curatedData) {
           vibrationPattern = vibrationPattern.concat([
-            // constrainValue(data.pop ?? 50, 50, 40, 1000, 15 / 16) /
-            // vibrationToPauseRatio, // initial 1000ms pause for reference
             constrainValue(data.temp, CelciusToKelvin(5), -20, 1000, 15 / 16) *
               vibrationToPauseRatio,
             constrainValue(data.humidity, 50, 40, 1000, 15 / 16) /
@@ -85,8 +78,8 @@
         };
         // limit the number of requests to the OpenWeatherMap API
         // limited at 1000 requests per day: 1000 * 60 * second in hours = 16.67 hours uptime per day
-        setInterval(fetch, 60 * 1000);
         setTimeout(fetch, 0);
+        setInterval(fetch, 60 * 1000);
 
         const vibrate = async () => {
           if (vibrationPattern === null) return setTimeout(vibrate, 100);
@@ -96,6 +89,7 @@
         };
         vibrate();
 
+        // change body background to show success
         document.body.style.backgroundColor = '#000';
       };
       document.addEventListener('click', init);
