@@ -54,16 +54,16 @@ current weather or weather forecast to vibrations
 ### implementation
 
 ```
-duration = average_duration * (1 + duration_deviation * tanh((temperature - mid_input) / input_deviation))
+duration = mid_output * (1 + output_deviation * tanh((input - mid_input) / input_deviation))
 ```
 
 where `mid_input` is the average input value (highest resolution) and `input_deviation` is the difference between the extremes of the input (lower resolution). any input outside the range is very low resolution.
 
-by default: `average_duration = 1000ms` and `duration_deviation = 3/4`
+by default: `mid_output = 1000ms` and `output_deviation = 3/4`
 
-**pattern**: [1. vibration] [2. pause] [3. vibration] [4. pause]
+**pattern**: [1. pause] [2. vibration] [3. pause] [4. vibration]
 
-1. temperature: `mid_input` = `0°C`, `input_deviation = 20°C`
-2. humidity: `mid_input = 50%`, `input_deviation = 75%`
-3. wind: `mid_input = 0km/h`, `input_deviation = 20km/h`, `average_duration = 1000ms * 1/4`, `duration_deviation = 2`
-4. precipitation: `mid_input = 50%`, `input_deviation = 75%`
+1. precipitation: `mid_input = 50%`, `input_deviation = 40%`
+2. temperature: `mid_input` = `0°C`, `input_deviation = -20°C`
+3. humidity: `mid_input = 50%`, `input_deviation = 40%`
+4. wind: `mid_input = 0m/s`, `input_deviation = 10m/s`, `mid_output = 1000ms * 1/4`, `output_deviation = 2`
