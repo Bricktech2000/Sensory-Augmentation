@@ -45,18 +45,19 @@
 
         // https://openweathermap.org/api/one-call-api
         const curatedData = [weatherData.current];
-        var vibrationPattern = [];
+        const pause = 250; // ms
+        var vibrationPattern = [1000, pause];
         for (var data of curatedData) {
           vibrationPattern = vibrationPattern.concat([
-            constrainValue(data.temp, CelciusToKelvin(5), -20, 1000, 15 / 16) *
-              vibrationToPauseRatio,
-            constrainValue(data.humidity, 50, 40, 1000, 15 / 16) /
-              vibrationToPauseRatio,
-            constrainValue(data.wind_speed, 0, 10, 1000 * (1 / 16), 2) *
-              vibrationToPauseRatio,
+            constrainValue(data.temp, CelciusToKelvin(5), -20, 1000, 15 / 16),
+            pause,
+            constrainValue(data.humidity, 50, 40, 1000, 15 / 16),
+            pause,
+            constrainValue(data.wind_speed, 0, 10, 1000 * (1 / 16), 2),
           ]);
         }
         console.log(weatherData);
+        console.log(vibrationPattern);
         return vibrationPattern;
       };
 
