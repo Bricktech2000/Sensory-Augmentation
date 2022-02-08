@@ -53,6 +53,8 @@ current weather or weather forecast to vibrations
 
 ### implementation
 
+_note: the pattern below was modified in the actual implementation, and will be updated when testing shows that the theory actually works_
+
 ```
 duration = mid_output * (1 + output_deviation * tanh((input - mid_input) / input_deviation))
 ```
