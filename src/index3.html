@@ -10,7 +10,7 @@
     <script>
       // https://stackoverflow.com/questions/19705785/python-3-simple-https-server
       const apiKey = 'f6d90bb8275f9f5ae69af1296c9d8157';
-      const vibrationToPauseRatio = 0.95; // used for tuning timing on low-quality vibrator motors
+      const frequency = 440; // the frequency of the audio pattern (if audio is used)
 
       const getCurrentPosition = () => {
         // https://www.w3schools.com/html/html5_geolocation.asp
@@ -44,20 +44,30 @@
         const CelciusToKelvin = (C) => C + 273.15;
 
         // https://openweathermap.org/api/one-call-api
-        const curatedData = [weatherData.current];
+        const curatedData = [
+          weatherData.current,
+          weatherData.hourly[6],
+          weatherData.hourly[12],
+        ];
+
         const pause = 250; // ms
-        var vibrationPattern = [1000, pause];
+        var vibrationPattern = [];
+
         for (var data of curatedData) {
           vibrationPattern = vibrationPattern.concat([
-            constrainValue(data.temp, CelciusToKelvin(5), -20, 1000, 15 / 16),
+            1000,
+            pause,
+            constrainValue(data.temp, CelciusToKelvin(5), 20, 1000, 15 / 16),
             pause,
             constrainValue(data.humidity, 50, 40, 1000, 15 / 16),
             pause,
-            constrainValue(data.wind_speed, 0, 10, 1000 * (1 / 16), 2),
+            constrainValue(data.wind_speed, 0, -10, 1000 * (31 / 16), 15 / 16),
+            pause,
           ]);
         }
         console.log(weatherData);
         console.log(vibrationPattern);
+
         return vibrationPattern;
       };
 
@@ -82,17 +92,60 @@
         setTimeout(fetch, 0);
         setInterval(fetch, 60 * 1000);
 
-        const vibrate = async () => {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        const playPatternAudio = async (pattern) => {
+          var sound = true;
+          for (vibrationDuration of vibrationPattern) {
+            sound = !sound;
+            if (sound) {
+              await sleep(vibrationDuration);
+              continue;
+            }
+
+            const startTime = 0;
+            const osc = ctx.createOscillator();
+
+            osc.type = 'sine';
+            osc.frequency.value = frequency;
+            osc.connect(ctx.destination);
+            osc.start(startTime);
+            await sleep(vibrationDuration);
+
+            // https://webaudiotech.com/2017/02/27/stopping-a-web-audio-oscillator-at-cycle-completion/
+            var halfCycleDuration = 0.5 / frequency;
+            var runningTime = ctx.currentTime - startTime;
+            var completedHalfCycles = Math.floor(
+              runningTime / halfCycleDuration
+            );
+            var timeOfLastZC =
+              startTime + halfCycleDuration * completedHalfCycles;
+            var timeOfNextZC = timeOfLastZC + halfCycleDuration;
+
+            osc.stop(timeOfLastZC);
+          }
+        };
+
+        const playPatternVibration = navigator.vibrate.bind(navigator);
+
+        const vibrate = () => {
           if (vibrationPattern === null) return setTimeout(vibrate, 100);
-          setTimeout(vibrate, getPatternLength(vibrationPattern) * 0 + 8000);
-          navigator.vibrate(vibrationPattern);
-          console.log('Sending Vibration: ', vibrationPattern);
+          setTimeout(
+            vibrate,
+            getPatternLength(vibrationPattern) * 0 + 8000 * 3
+          );
+
+          console.log('Sending Pattern: ', vibrationPattern);
+          // playPatternVibration(vibrationPattern);
+          playPatternAudio(vibrationPattern);
         };
         vibrate();
 
         // change body background to show success
         document.body.style.backgroundColor = '#000';
       };
+
       document.addEventListener('click', init);
     </script>
   </body>
