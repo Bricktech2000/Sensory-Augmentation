@@ -4,15 +4,13 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Sensory Augmentation</title>
   </head>
   <body>
     <script>
       // https://stackoverflow.com/questions/19705785/python-3-simple-https-server
-      const apiKey = 'f6d90bb8275f9f5ae69af1296c9d8157';
-      const frequency = 440; // the frequency of the audio pattern (if audio is used)
 
-      const getCurrentPosition = () => {
+      const getGPSLocation = () => {
         // https://www.w3schools.com/html/html5_geolocation.asp
         return new Promise((resolve, reject) => {
           if (navigator.geolocation) {
@@ -27,7 +25,12 @@
         });
       };
 
+      const getTimeData = () => {
+        return { date: new Date(), numberOfBits: 9 };
+      };
+
       const getWeatherData = async ({ longitude, latitude }) => {
+        const apiKey = 'f6d90bb8275f9f5ae69af1296c9d8157';
         // https://openweathermap.org/api/one-call-api
         // openweathermap api javascript: https://bithacker.dev/fetch-weather-openweathermap-api-javascript
         // get API key: https://home.openweathermap.org/api_keys
@@ -37,7 +40,7 @@
         return json;
       };
 
-      const getVibrationPattern = (weatherData) => {
+      const getPatternWeather = (weatherData) => {
         // see ideas.md
         const constrainValue = (input, in_mid, in_dev, out_mid, out_dev) =>
           out_mid * (1 + out_dev * Math.tanh((input - in_mid) / in_dev));
@@ -48,99 +51,126 @@
           weatherData.current,
           weatherData.hourly[6],
           weatherData.hourly[12],
+          weatherData.hourly[24],
         ];
 
-        const pause = 250; // ms
-        var vibrationPattern = [];
+        const pause = 50; // ms
+        var patternWeather = [];
 
-        for (var data of curatedData) {
-          vibrationPattern = vibrationPattern.concat([
+        for (const data of curatedData) {
+          patternWeather = patternWeather.concat([
+            pause,
             1000,
             pause,
-            constrainValue(data.temp, CelciusToKelvin(5), 20, 1000, 15 / 16),
+            constrainValue(data.temp, CelciusToKelvin(15), 20, 1000, 15 / 16),
             pause,
             constrainValue(data.humidity, 50, 40, 1000, 15 / 16),
             pause,
             constrainValue(data.wind_speed, 0, -10, 1000 * (31 / 16), 15 / 16),
-            pause,
           ]);
         }
-        console.log(weatherData);
-        console.log(vibrationPattern);
+        console.log('weather data', weatherData);
+        console.log('pattern weather', patternWeather);
 
-        return vibrationPattern;
+        return patternWeather;
       };
 
+      const getPatternTime = (timeData) => {
+        const { date, numberOfBits } = timeData;
+
+        // https://stackoverflow.com/questions/11149555/javascript-how-to-calculate-the-beginning-of-a-day-with-milliseconds
+        // https://codeofmatt.com/please-dont-call-it-epoch-time/
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const msSinceTimezoneEpoch =
+          date.getTime() - date.getTimezoneOffset() * 60 * 1000;
+        const msSinceStartOfDay = msSinceTimezoneEpoch % msPerDay;
+        const bin = Math.floor(
+          (msSinceStartOfDay / msPerDay) * Math.pow(2, numberOfBits)
+        );
+        console.log(msSinceStartOfDay, msPerDay, bin);
+
+        const pause = 50; // ms
+        var patternTime = [];
+
+        // https://stackoverflow.com/questions/21071836/enumerate-through-binary-number-bits-in-reverse
+        for (var i = numberOfBits - 1; i >= 0; i--) {
+          const bit = bin & (1 << i) ? 1 : 0;
+          patternTime = patternTime.concat([pause, bit ? 200 : 100]);
+        }
+
+        console.log('time data', timeData);
+        console.log('pattern time', patternTime);
+
+        return patternTime;
+      };
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       const getPatternLength = (pattern) =>
         pattern.reduce((acc, cur) => acc + cur, 0);
+
+      const playPatternAudio = async (pattern, frequency) => {
+        var sound = true;
+        for (duration of pattern) {
+          sound = !sound;
+          if (sound) {
+            await sleep(duration);
+            continue;
+          }
+
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.value = frequency;
+          osc.connect(ctx.destination);
+          const startTime = ctx.currentTime;
+          osc.start(startTime);
+
+          // https://webaudiotech.com/2017/02/27/stopping-a-web-audio-oscillator-at-cycle-completion/
+          const halfCycleDuration = 0.5 / frequency;
+          const runningTime = duration / 1000;
+          const completedHalfCycles = Math.floor(
+            runningTime / halfCycleDuration
+          );
+          const timeOfLastZC =
+            startTime + halfCycleDuration * completedHalfCycles;
+          const timeOfNextZC = timeOfLastZC + halfCycleDuration;
+
+          osc.stop(timeOfNextZC);
+          await sleep(duration);
+        }
+      };
+
+      const playPatternVibration = navigator.vibrate.bind(navigator);
 
       const init = async () => {
         document.removeEventListener('click', init);
 
-        const position = await getCurrentPosition();
-        var vibrationPattern = null;
-        const fetch = async () => {
+        // limit the number of requests to the OpenWeatherMap API
+        // limited at 1000 requests per day: 1000 * 60 * second in hours = 16.67 hours uptime per day
+        const position = await getGPSLocation();
+        var patternWeather = null;
+        const fetchWeatherData = async () => {
           try {
             const data = await getWeatherData(position);
-            vibrationPattern = getVibrationPattern(data);
+            patternWeather = getPatternWeather(data);
           } catch (e) {
             console.error(e);
           }
         };
-        // limit the number of requests to the OpenWeatherMap API
-        // limited at 1000 requests per day: 1000 * 60 * second in hours = 16.67 hours uptime per day
-        setTimeout(fetch, 0);
-        setInterval(fetch, 60 * 1000);
+        setTimeout(fetchWeatherData, 0);
+        setInterval(fetchWeatherData, 60 * 1000);
 
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const sendPatterns = async () => {
+          if (patternWeather === null) return setTimeout(sendPatterns, 100);
 
-        const playPatternAudio = async (pattern) => {
-          var sound = true;
-          for (vibrationDuration of vibrationPattern) {
-            sound = !sound;
-            if (sound) {
-              await sleep(vibrationDuration);
-              continue;
-            }
+          const patternTime = getPatternTime(getTimeData());
 
-            const startTime = 0;
-            const osc = ctx.createOscillator();
+          await playPatternAudio(patternWeather, 220 * Math.pow(2, 3 / 12));
+          await playPatternAudio(patternTime, 220 * Math.pow(2, 0 / 12));
 
-            osc.type = 'sine';
-            osc.frequency.value = frequency;
-            osc.connect(ctx.destination);
-            osc.start(startTime);
-            await sleep(vibrationDuration);
-
-            // https://webaudiotech.com/2017/02/27/stopping-a-web-audio-oscillator-at-cycle-completion/
-            var halfCycleDuration = 0.5 / frequency;
-            var runningTime = ctx.currentTime - startTime;
-            var completedHalfCycles = Math.floor(
-              runningTime / halfCycleDuration
-            );
-            var timeOfLastZC =
-              startTime + halfCycleDuration * completedHalfCycles;
-            var timeOfNextZC = timeOfLastZC + halfCycleDuration;
-
-            osc.stop(timeOfLastZC);
-          }
+          setTimeout(sendPatterns, 8000 * 3);
         };
-
-        const playPatternVibration = navigator.vibrate.bind(navigator);
-
-        const vibrate = () => {
-          if (vibrationPattern === null) return setTimeout(vibrate, 100);
-          setTimeout(
-            vibrate,
-            getPatternLength(vibrationPattern) * 0 + 8000 * 3
-          );
-
-          console.log('Sending Pattern: ', vibrationPattern);
-          // playPatternVibration(vibrationPattern);
-          playPatternAudio(vibrationPattern);
-        };
-        vibrate();
+        setTimeout(sendPatterns, Math.random());
 
         // change body background to show success
         document.body.style.backgroundColor = '#000';
