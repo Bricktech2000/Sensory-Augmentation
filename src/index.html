@@ -55,7 +55,7 @@
         ];
 
         const pause = 50; // ms
-        var patternWeather = [];
+        let patternWeather = [];
 
         for (const data of curatedData) {
           patternWeather = patternWeather.concat([
@@ -89,10 +89,10 @@
         );
 
         const pause = 50; // ms
-        var patternTime = [];
+        let patternTime = [];
 
         // https://stackoverflow.com/questions/21071836/enumerate-through-binary-number-bits-in-reverse
-        for (var i = numberOfBits - 1; i >= 0; i--) {
+        for (let i = numberOfBits - 1; i >= 0; i--) {
           const bit = bin & (1 << i) ? 1 : 0;
           patternTime = patternTime.concat([pause, bit ? 200 : 100]);
         }
@@ -109,7 +109,7 @@
         pattern.reduce((acc, cur) => acc + cur, 0);
 
       const playPatternAudio = async (pattern, frequency) => {
-        var sound = true;
+        let sound = true;
         for (duration of pattern) {
           sound = !sound;
           if (sound) {
@@ -145,8 +145,8 @@
         document.removeEventListener('click', init);
 
         const position = await getGPSLocation();
-        var patternWeather = null;
-        var patternTime = null;
+        let patternWeather = null;
+        let patternTime = null;
         const fetchWeatherData = async () => {
           try {
             const data = await getWeatherData(position);

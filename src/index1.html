@@ -22,9 +22,9 @@
   <body ontouchstart="">
     <script>
       (async () => {
-        var ctx = await SensoryAugmentation.cameraIn(3); //2 ^ n
+        let ctx = await SensoryAugmentation.cameraIn(3); //2 ^ n
         document.body.appendChild(ctx.canvas);
-        var [data, ctx2] = await SensoryAugmentation.toData(ctx);
+        let [data, ctx2] = await SensoryAugmentation.toData(ctx);
         document.body.appendChild(ctx2.canvas);
         SensoryAugmentation.soundOut(data, 440, 3000);
       })();
